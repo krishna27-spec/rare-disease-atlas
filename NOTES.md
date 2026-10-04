@@ -32,3 +32,15 @@
 - Confidence words shown in the UI: Strong >= 0.85, Moderate >= 0.6, Tentative below; inferred edges show "Computed score". Documented in the Evidence & method tab.
 - The plain-language "why" sentence for each edge (ui.relation_sentence) only restates the edge's own fields (source, predicate, subject, object).
 - The reference video (portrait, 4.6 MB, watermarked) was used for mood only, not shipped.
+
+## UX simplification (branch ui-redesign, 2026-10-04)
+- Six views instead of a five-step flow: Explore, Biology, Connections, Research, Communities, Evidence. Only the active view renders (`ss.view`), so the LLM call runs only on Research. The top nav (segmented control) and the sidebar list share that state.
+- After the intro: a home screen ("What would you like to explore?") with search, suggestions and five shortcuts into MPS IIIC. Entering plays a one-off zoom of the intro's network (`ui.transition_overlay`).
+- Search shows one interpreted result card (disease / gene / symptom), up to 3 "Did you mean" alternatives, the rest behind "Show more". No match -> plain message + Browse diseases.
+- Friendly evidence labels: Verified source (curated), Research literature (text-mined), Atlas-derived (inferred); technical names in tooltips and "Evidence details". Strength shown in words; the number is on hover.
+- Removed from the permanent UI: step bar, sidebar legend, Atlas stats (now Evidence -> About the Atlas), top disclaimer (now a footer that expands).
+- Graph: layout computed once off screen, then frozen; revealed in stages (disease -> gene -> pathways -> related diseases + symptoms); "Expand connections" or clicking a node reveals the rest. Edge click: light pulse, capped zoom, "Why is this connected?" with quote and technical record folded. The last selection per disease is kept in localStorage.
+- Presentation-only orderings: pathways by how many of our genes share them (fewest first), symptoms by how many of our diseases have them (fewest first). Symptom counts are distinct symptoms (the backend's n_phenotypes counts edges, so an HPO + paper duplicate counted twice).
+- Biology "How the gene is affected" is read from the Orphadata association type on the gene edge (e.g. "loss of function"); shown only when present.
+- Research opportunities: the best study for the disease, then one reusable study/registry per related disease, then the rest. Built from existing asset and neighbour rows.
+- Tested with AppTest: all 6 views x 22 diseases, home, searches and every Biology step, 0 failures.

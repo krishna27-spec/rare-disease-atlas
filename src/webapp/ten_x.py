@@ -24,21 +24,17 @@ def _card(title: str, ic: str, colour: str, items: list[str], accent: bool = Fal
 
 def render(G, disease: str) -> None:
     st.html(ui.section("10× idea: start a natural history study for MPS IIIC without starting from zero",
-                       "The 10× route", "spark",
                        "Milestone: a family group wants a natural history study (a study that records how the disease "
-                       "progresses without treatment), the evidence regulators ask for before trials."))
+                       "progresses without treatment), the evidence regulators ask for before trials.", "spark"))
     tl = pd.read_csv(GRAPH / "nhs_timelines.csv")
     done = tl[(tl.status == "COMPLETED") & tl.months.notna()]
     sib = tl[tl.disease.str.contains("IIIA|IIIB|IIID")]
     own = tl[tl.disease.str.contains("IIIC")]
 
-    st.html('<div class="tiles" style="margin:.6rem 0 1rem">'
-            + ui.tile("trial", "Sanfilippo natural history studies", len(tl), "ClinicalTrials.gov")
-            + ui.tile("check", "Completed", len(done), "with a known duration")
-            + ui.tile("info", "Median duration", f"{done.months.median():.0f} months",
-                      f"range {done.months.min():.0f}–{done.months.max():.0f}")
-            + ui.tile("person", "Median enrolment", f"{done.enrollment.median():.0f}", "children")
-            + ui.tile("asset", "Already for MPS IIIC", len(own), "check these first") + "</div>")
+    st.html(ui.stats([("trial", len(tl), "Sanfilippo natural history studies"), ("check", len(done), "completed"),
+                      ("info", f"{done.months.median():.0f} months", "median duration"),
+                      ("person", f"{done.enrollment.median():.0f}", "median enrolment"),
+                      ("asset", len(own), "already for MPS IIIC")]))
 
     usual = [f"FDA draft guidance says prospective natural history studies generally take more time than reusing "
              f"existing data, and longitudinal ones can be lengthy and costly "
@@ -56,14 +52,14 @@ def render(G, disease: str) -> None:
     atlas += [f"<a href='{escape(r.source_url)}' target='_blank' rel='noopener'>{escape(r.nct)}</a> {escape(r.title)} · "
               f"{escape(str(r.status))} · {escape(str(r.start))} to {escape(str(r.completion))} · {escape(str(r.sponsor))}"
               for r in own.itertuples()]
-    atlas.append("Next step: contact the study teams below (see <i>Act · next steps</i> for cited leads).")
+    atlas.append("Next step: contact the study teams below (see <i>Suggested next steps</i> above for cited leads).")
     c1, c2 = st.columns(2, gap="medium")
     c1.html(_card("Usual route: build it from scratch", "asset", ui.MUTED, usual))
     c2.html(_card("Atlas route: reuse what sister diseases already built", "pathway", ui.LAVENDER, atlas, accent=True))
 
-    st.html(ui.section("Existing Sanfilippo natural history studies", "Source data", "trial",
+    st.html(ui.section("Existing Sanfilippo natural history studies",
                        f"ClinicalTrials.gov, retrieved {tl.retrieved.iloc[0]}. Duration = registered start to "
-                       "registered (planned or actual) completion."))
+                       "registered (planned or actual) completion.", "trial"))
     show = tl[["nct", "disease", "title", "status", "start", "completion", "months", "enrollment", "sponsor"]]
     st.dataframe(show, hide_index=True, width='stretch')
 
