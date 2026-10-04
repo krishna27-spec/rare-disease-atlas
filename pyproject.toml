@@ -15,5 +15,4 @@ dependencies = [
     "rapidfuzz>=3.14.6",
     "requests>=2.34.2",
     "streamlit>=1.65.0",
-    "streamlit-agraph>=0.0.45",
 ]

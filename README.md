@@ -64,7 +64,7 @@ Streamlit Community Cloud: repo `krishna27-spec/rare-disease-atlas`, branch `mai
 - Only a small share of the filtered abstracts has been read by the LLM (Groq free tier is slow); see STATS.md for the exact number. Text-mined edges are therefore sparse (they supplement the curated graph).
 - Extraction records "stated"/"suggested" but not negation, so contradiction detection finds 0 and says so.
 - Similarity uses HPO annotations, which are uneven across diseases.
-- The question of whether cross-correction approaches used for MPS IIIA transfer to MPS IIIC (HGSNAT is a membrane enzyme) is **not** claimed: no cited source is in the graph. Future work.
+- The question of whether cross-correction approaches used for MPS IIIA transfer to MPS IIIC is **not** claimed: no cited source is in the graph. Future work.
 - Time to *set up* a natural history study has no cited figure, so the 10× tab states none.
 
 ## Scale-up path

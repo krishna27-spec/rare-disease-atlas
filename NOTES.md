@@ -14,3 +14,11 @@
 - 10x tab uses nhs_timelines.csv (ClinicalTrials.gov dates); FDA guidance is cited only qualitatively. No setup-time figure was found, none is stated.
 - Patient orgs: 5 rows from homepage reads on 2026-10-04; BDSRA scope not verified. HGSNAT cross-correction claim dropped per NEXT-STEPS.
 - Not done: Claude reviewer, molab run, Streamlit Cloud deploy (needs the user's share.streamlit.io login), video.
+
+## Graph view rework (2026-10-04)
+- Stray "None" under the old graph was Streamlit "magic" printing the value of `nodes.append(...) if ... else None`; the agraph block was removed.
+- Graph is now pyvis (src/webapp/network.py), shown first in "Who is like us"; edge clicks show source/date/confidence/quote from data embedded in the page. Screenshot: docs/mps3c_graph.png.
+- Generic Reactome pathways (roots + direct children, src/graph/reactome.py) are excluded from similarity, shared-pathway lists and the graph. Clusters after: MPS I, II, IIIA-D still together; Alpha-mannosidosis became its own cluster (was with GM1/Krabbe group).
+- Text-mined edges for MPS IIIC existed already (7 before, now fewer after the new quote check) but the old graph never drew them; now drawn orange.
+- Bug found and fixed: a text-mined edge SGSH -> MPS IIID came from a quote naming N-acetylglucosamine-6-sulphatase (GNS). text_mined.py now requires the quote to name the gene/symptom (or an alias); 5 facts dropped for this.
+- "(contrast)" removed from names; app shows a graph-derived comparison note (Graph.comparison_note).
