@@ -4,7 +4,7 @@ import os
 import time
 
 from dotenv import load_dotenv
-from openai import OpenAI, RateLimitError
+from openai import BadRequestError, OpenAI, RateLimitError
 from pydantic import BaseModel
 
 load_dotenv()
@@ -42,7 +42,10 @@ def chat_json(messages: list[dict], model_class: type[BaseModel]) -> BaseModel |
     """Ask for JSON, validate with Pydantic, retry once, then give up (None) and log."""
     schema = model_class.model_json_schema()
     for _ in range(2):
-        text = _ask(messages, schema)
+        try:
+            text = _ask(messages, schema)
+        except BadRequestError:  # e.g. Groq 400 json_validate_failed: the model produced no valid JSON
+            continue
         try:
             return model_class.model_validate(json.loads(text))
         except ValueError:  # bad JSON or failed validation
