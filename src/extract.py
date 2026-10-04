@@ -111,5 +111,6 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int)
     ap.add_argument("--workers", type=int, default=1)
+    ap.add_argument("--input", default="abstracts_filtered.jsonl")  # from src.etl.filter_abstracts
     a = ap.parse_args()
-    run(CACHE / "abstracts.jsonl", CACHE, a.limit, a.workers)
+    run(CACHE / a.input, CACHE, a.limit, a.workers)

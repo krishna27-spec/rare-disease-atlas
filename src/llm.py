@@ -22,14 +22,14 @@ def _ask(messages: list[dict], json_schema: dict | None) -> str:
             "type": "json_schema",
             "json_schema": {"name": "answer", "schema": json_schema},
         }
-    for attempt in range(5):
+    for attempt in range(8):
         try:
             reply = _client().chat.completions.create(
                 model=os.environ["LLM_MODEL"], messages=messages, **kwargs
             )
             return reply.choices[0].message.content or ""
         except RateLimitError:
-            time.sleep(2**attempt)  # wait 1, 2, 4, 8, 16 seconds
+            time.sleep(min(2**attempt, 30))  # wait 1, 2, 4, 8, 16, 30, 30, 30 seconds
     raise RuntimeError("LLM kept answering 'rate limit' (429); try again later.")
 
 

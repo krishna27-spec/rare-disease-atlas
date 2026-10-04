@@ -21,6 +21,7 @@ import pandas as pd
 import pyarrow.parquet as pq
 
 from src.etl.download import RAW
+from src.etl.genes import gene_aliases
 from src.etl.terms import match_diseases, normalise
 from src.graph.schema import EDGE_SCHEMA, GRAPH_DIR, NODE_SCHEMA, make_edge, write_table
 
@@ -51,11 +52,7 @@ def main() -> None:
     nodes = [n for n in nodes if n["node_type"] != "Paper"]
     edges = [e for e in edges if e["evidence_type"] != "text_mined"]
 
-    genes = {}
-    for n in nodes:
-        if n["node_type"] == "Gene":
-            genes[normalise(n["node_id"])] = n["node_id"]
-            genes[normalise(n["name"])] = n["node_id"]
+    genes = gene_aliases({n["node_id"] for n in nodes if n["node_type"] == "Gene"})
     hp_nodes = {n["node_id"] for n in nodes if n["node_type"] == "Phenotype"}
     phenos = phenotype_lookup(hp_nodes)
     curated = {(e["subject"], e["predicate"], e["object"]) for e in edges}
@@ -68,12 +65,12 @@ def main() -> None:
             continue
         mondo = [d for d, kind in match_diseases(f["disease"]) if kind == "specific" and d in f["disease_ids"]]
         if len(mondo) != 1:
-            stats["dropped: disease not one of this paper's diseases"] += 1
+            stats["dropped: out of scope (disease not one of ours / not this paper's)"] += 1
             continue
         key = normalise(f["object"])
         obj = genes.get(key) if f["predicate"] == "gene_associated_with_disease" else phenos.get(key)
         if obj is None:
-            stats["dropped: object not in graph"] += 1
+            stats["dropped: unresolved (name not in graph)"] += 1
             continue
         pmid = f["pmid"]
         new_edges.append(make_edge(
@@ -89,6 +86,8 @@ def main() -> None:
     for k, v in stats.items():
         if k != "facts":
             print(f"  {v:5d}  {k}")
+    drops = {k.replace("dropped: ", ""): v for k, v in stats.items() if k.startswith("dropped")}
+    (GRAPH_DIR / "text_mined_drops.json").write_text(json.dumps(drops, indent=1))
 
 
 if __name__ == "__main__":
