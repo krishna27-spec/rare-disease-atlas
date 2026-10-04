@@ -46,7 +46,8 @@ Return JSON {"facts": [...]}. Each fact has:
     gene_associated_with_disease  (a gene whose mutations cause or are linked to the disease)
     has_phenotype                 (a symptom or clinical sign patients with the disease have)
     participates_in_pathway       (a biological pathway or process the disease's gene/protein works in)
-- object: the gene symbol, symptom or pathway, as named in the abstract
+- object: SHORT. For genes the official symbol (HEXB, HGSNAT). For symptoms a short standard clinical term
+    ("seizure", "hepatomegaly", "intellectual disability"), never a sentence. For pathways a short process name
 - certainty: "stated" if the abstract says it plainly, "suggested" if it only hints, proposes or speculates
 - evidence_text: ONE sentence copied EXACTLY, character for character, from the abstract
 
