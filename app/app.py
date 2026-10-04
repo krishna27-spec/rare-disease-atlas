@@ -424,7 +424,7 @@ with tab_about:
                        escape(G.summary.get("note", ""))))
     c1, c2 = st.columns([1, 1], gap="large")
     with c1:
-        st.markdown((Path(__file__).resolve().parent.parent / "data" / "graph" / "STATS.md").read_text())
+        st.markdown((Path(__file__).resolve().parent.parent / "data" / "graph" / "STATS.md").read_text(encoding="utf-8"))
     with c2:
         st.markdown("""### How confidence is set
 - **curated**: Orphadata germline-causing gene 0.95 (0.85 when found through a parent disease); HPO annotation 0.9 (lower if "occasional"); trials, grants and investigators 0.8 to 0.9.

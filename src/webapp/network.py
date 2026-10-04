@@ -124,7 +124,7 @@ def _page(nodes, edges, node_info, edge_data, counts, centre_label) -> str:
     return f"""<!doctype html><html><head><meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
-<script>{VIS_JS.read_text()}</script>
+<script>{VIS_JS.read_text(encoding="utf-8")}</script>
 <style>
 :root {{ --bg:{ui.BG}; --bg2:{ui.BG2}; --surface:{ui.SURFACE}; --line:{ui.LINE}; --text:{ui.TEXT}; --text2:{ui.TEXT2};
   --muted:{ui.MUTED}; --purple:{ui.PURPLE}; --lav:{ui.LAVENDER}; --red:{ui.RED}; --cyan:{ui.CYAN}; }}
