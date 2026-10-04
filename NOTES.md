@@ -22,3 +22,25 @@
 - Text-mined edges for MPS IIIC existed already (7 before, now fewer after the new quote check) but the old graph never drew them; now drawn orange.
 - Bug found and fixed: a text-mined edge SGSH -> MPS IIID came from a quote naming N-acetylglucosamine-6-sulphatase (GNS). text_mined.py now requires the quote to name the gene/symptom (or an alias); 5 facts dropped for this.
 - "(contrast)" removed from names; app shows a graph-derived comparison note (Graph.comparison_note).
+
+## UI redesign (branch ui-redesign, 2026-10-04)
+- Frontend only: app/app.py, src/webapp/{ui,intro,network,ten_x}.py, .streamlit/config.toml. No change to data.py, explain.py, ETL, graph build or data files.
+- ui.py holds the colour tokens, page CSS, icon set and HTML blocks. st.html strips inline <svg>, so icons are <img> tags with data-URI SVGs.
+- Evidence colours changed to match the spec: curated green (solid), text-mined cyan (solid), inferred amber (dashed). Each also has its own glyph, so meaning is not colour-only.
+- Landing: canvas animation in intro.py (helix -> one variant -> graph of entity types). Labels are entity types, not data. Holds until "Enter the Atlas"; "Skip intro" is always there. `?intro=0` in the URL skips it (handy for demos and tests). Honours prefers-reduced-motion.
+- Graph page (network.py) no longer uses pyvis's template; it reuses pyvis's bundled vis-network JS with the same node/edge selection as before. Clicking a line shows "Why is this connected?"; clicking a node dims everything outside its neighbourhood. It re-fits when its tab becomes visible (it loads inside a hidden tab at size 0).
+- Confidence words shown in the UI: Strong >= 0.85, Moderate >= 0.6, Tentative below; inferred edges show "Computed score". Documented in the Evidence & method tab.
+- The plain-language "why" sentence for each edge (ui.relation_sentence) only restates the edge's own fields (source, predicate, subject, object).
+- The reference video (portrait, 4.6 MB, watermarked) was used for mood only, not shipped.
+
+## UX simplification (branch ui-redesign, 2026-10-04)
+- Six views instead of a five-step flow: Explore, Biology, Connections, Research, Communities, Evidence. Only the active view renders (`ss.view`), so the LLM call runs only on Research. The top nav (segmented control) and the sidebar list share that state.
+- After the intro: a home screen ("What would you like to explore?") with search, suggestions and five shortcuts into MPS IIIC. Entering plays a one-off zoom of the intro's network (`ui.transition_overlay`).
+- Search shows one interpreted result card (disease / gene / symptom), up to 3 "Did you mean" alternatives, the rest behind "Show more". No match -> plain message + Browse diseases.
+- Friendly evidence labels: Verified source (curated), Research literature (text-mined), Atlas-derived (inferred); technical names in tooltips and "Evidence details". Strength shown in words; the number is on hover.
+- Removed from the permanent UI: step bar, sidebar legend, Atlas stats (now Evidence -> About the Atlas), top disclaimer (now a footer that expands).
+- Graph: layout computed once off screen, then frozen; revealed in stages (disease -> gene -> pathways -> related diseases + symptoms); "Expand connections" or clicking a node reveals the rest. Edge click: light pulse, capped zoom, "Why is this connected?" with quote and technical record folded. The last selection per disease is kept in localStorage.
+- Presentation-only orderings: pathways by how many of our genes share them (fewest first), symptoms by how many of our diseases have them (fewest first). Symptom counts are distinct symptoms (the backend's n_phenotypes counts edges, so an HPO + paper duplicate counted twice).
+- Biology "How the gene is affected" is read from the Orphadata association type on the gene edge (e.g. "loss of function"); shown only when present.
+- Research opportunities: the best study for the disease, then one reusable study/registry per related disease, then the rest. Built from existing asset and neighbour rows.
+- Tested with AppTest: all 6 views x 22 diseases, home, searches and every Biology step, 0 failures.
