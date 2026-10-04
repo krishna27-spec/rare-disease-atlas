@@ -22,3 +22,13 @@
 - Text-mined edges for MPS IIIC existed already (7 before, now fewer after the new quote check) but the old graph never drew them; now drawn orange.
 - Bug found and fixed: a text-mined edge SGSH -> MPS IIID came from a quote naming N-acetylglucosamine-6-sulphatase (GNS). text_mined.py now requires the quote to name the gene/symptom (or an alias); 5 facts dropped for this.
 - "(contrast)" removed from names; app shows a graph-derived comparison note (Graph.comparison_note).
+
+## UI redesign (branch ui-redesign, 2026-10-04)
+- Frontend only: app/app.py, src/webapp/{ui,intro,network,ten_x}.py, .streamlit/config.toml. No change to data.py, explain.py, ETL, graph build or data files.
+- ui.py holds the colour tokens, page CSS, icon set and HTML blocks. st.html strips inline <svg>, so icons are <img> tags with data-URI SVGs.
+- Evidence colours changed to match the spec: curated green (solid), text-mined cyan (solid), inferred amber (dashed). Each also has its own glyph, so meaning is not colour-only.
+- Landing: canvas animation in intro.py (helix -> one variant -> graph of entity types). Labels are entity types, not data. Holds until "Enter the Atlas"; "Skip intro" is always there. `?intro=0` in the URL skips it (handy for demos and tests). Honours prefers-reduced-motion.
+- Graph page (network.py) no longer uses pyvis's template; it reuses pyvis's bundled vis-network JS with the same node/edge selection as before. Clicking a line shows "Why is this connected?"; clicking a node dims everything outside its neighbourhood. It re-fits when its tab becomes visible (it loads inside a hidden tab at size 0).
+- Confidence words shown in the UI: Strong >= 0.85, Moderate >= 0.6, Tentative below; inferred edges show "Computed score". Documented in the Evidence & method tab.
+- The plain-language "why" sentence for each edge (ui.relation_sentence) only restates the edge's own fields (source, predicate, subject, object).
+- The reference video (portrait, 4.6 MB, watermarked) was used for mood only, not shipped.
