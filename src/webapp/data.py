@@ -49,8 +49,10 @@ class Graph:
         if not q:
             return []
         texts = [r[0] for r in self._index]
-        hits = process.extract(q, texts, scorer=fuzz.WRatio, limit=40, score_cutoff=70)
+        hits = process.extract(q, texts, scorer=fuzz.WRatio, limit=40, score_cutoff=88)
         best: dict[str, dict] = {}
+        if len(q) >= 4:   # whole-word-ish substring ("sachs" finds Tay-Sachs) counts as a strong match
+            hits += [(t, 90.0, i) for i, t in enumerate(texts) if q in t]
         for text, score, i in hits:
             _, kind, nid, label = self._index[i]
             if nid not in best or score > best[nid]["score"]:
@@ -143,10 +145,10 @@ class Graph:
 
 
 def validate_steps(text: str, allowed: set[str]) -> list[str]:
-    """Keep only sentences that cite at least one edge ID, and only if every cited ID was in the input."""
+    """Keep only lines (one step per line) that cite at least one edge ID, and only if every ID was in the input."""
     kept = []
-    for line in re.split(r"(?<=[.!?\]])\s+|\n+", text):
+    for line in text.splitlines():
         ids = EDGE_ID.findall(line)
-        if ids and all(i in allowed for i in ids):
-            kept.append(line.strip())
+        if len(line.strip(" -*•0123456789.[]E,")) > 20 and ids and all(i in allowed for i in ids):
+            kept.append(line.strip(" -*•"))
     return kept

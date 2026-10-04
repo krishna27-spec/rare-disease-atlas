@@ -67,7 +67,12 @@ disease = st.session_state.get("disease", DEFAULT)
 if q:
     hits = G.search(q)
     if not hits:
-        st.info("Nothing matched. Try a disease name, a gene symbol such as HGSNAT, or a symptom such as seizure.")
+        st.error(f"No supported route found for “{q}”.")
+        st.markdown(f"**What we searched:** the names and synonyms of our {len(G.diseases)} neuronopathic lysosomal "
+                    f"storage diseases, {int((G.nodes.node_type == 'Gene').sum())} genes and "
+                    f"{int((G.nodes.node_type == 'Phenotype').sum())} symptoms. Nothing matched closely enough.")
+        st.markdown("**What evidence would change this:** this disease being added to the Atlas with its gene, symptoms, "
+                    "trials and studies. Try a disease name, a gene symbol such as HGSNAT, or a symptom such as seizure.")
     else:
         top = hits[0]
         if top["kind"] == "disease":

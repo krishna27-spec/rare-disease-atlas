@@ -7,7 +7,8 @@ import os
 from src.webapp.data import EDGE_ID, validate_steps
 
 PROMPT = """You help the parent of a child with a rare disease. Below are CANDIDATE ACTIONS found in a
-knowledge graph. Write 1 to 3 next steps for a parent with no medical background, in plain language.
+knowledge graph. Write 1 to 3 next steps for a parent with no medical background, in plain language, ONE STEP PER LINE
+(each line a full sentence that ends with its edge IDs; no other text).
 Rules: use only the facts in the candidates; after every claim put the supporting edge IDs in square brackets,
 like [E1a2b3c4d5e6f]; never invent names, dates or numbers; do not give medical advice or treatment advice.
 If the candidates are empty, reply exactly: No supported next step was found.
