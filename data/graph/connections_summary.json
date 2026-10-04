@@ -1,7 +1,7 @@
 {
   "contradictions": 0,
-  "text_mined_facts": 21,
-  "note": "0 contradictions found among 21 text-mined facts (extraction has no negation field)",
+  "text_mined_facts": 46,
+  "note": "0 contradictions found among 46 text-mined facts (extraction has no negation field)",
   "shared_people": 47,
   "cross_cluster_people": 11,
   "assets": 543,

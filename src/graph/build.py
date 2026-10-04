@@ -11,6 +11,7 @@ STEPS = [
     "src.etl.download",         # data/raw (skips files already there)
     "src.etl.biology",          # diseases, genes, phenotypes, pathways
     "src.etl.research",         # trials, grants, investigators, assets, PubMed abstracts
+    "src.etl.timelines",        # real durations of Sanfilippo natural history studies (for the 10x tab)
     "src.graph.similarity",     # similar_to edges and clusters
     "src.etl.filter_abstracts", # drop off-topic abstracts before extraction
     "src.extract",              # only flattens already-extracted facts (limit 0)

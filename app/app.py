@@ -198,7 +198,10 @@ with tab_exist:
     else:
         o = G.orgs[G.orgs.mondo_ids.fillna("").str.contains(disease)] if "mondo_ids" in G.orgs else G.orgs
         for r in o.itertuples():
-            st.markdown(f"- [{r.name}]({r.url}) · checked {r.date_checked}")
+            st.markdown(f"- [{r.name}]({r.url}) · serves: {r.diseases_served} · registry/study: {r.registry_or_study} "
+                        f"· checked {r.date_checked}")
+        if o.empty:
+            st.caption("No curated patient organisation covers this disease yet.")
 
 # ------------------------------------------------------------------ what to do next
 with tab_next:

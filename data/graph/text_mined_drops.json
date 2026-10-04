@@ -1,5 +1,5 @@
 {
- "unresolved (name not in graph)": 24,
- "out of scope (disease not one of ours / not this paper's)": 37,
- "pathway predicate has no disease->pathway home": 16
+ "unresolved (name not in graph)": 31,
+ "out of scope (disease not one of ours / not this paper's)": 49,
+ "pathway predicate has no disease->pathway home": 21
 }
