@@ -19,5 +19,5 @@ MONDO:0018868,Metachromatic leukodystrophy,ARSA;PSAP,Leukodystrophy
 MONDO:0009499,Krabbe disease,GALC,Leukodystrophy
 MONDO:0009561,Alpha-mannosidosis,MAN2B1,Other neuronopathic LSD
 MONDO:0009653,Mucolipidosis IV,MCOLN1,Other neuronopathic LSD
-MONDO:0001586,MPS I (contrast),IDUA,Contrast
-MONDO:0010674,MPS II (contrast),IDS,Contrast
+MONDO:0001586,MPS I (Hurler),IDUA,Contrast
+MONDO:0010674,MPS II (Hunter),IDS,Contrast

@@ -17,6 +17,7 @@ SOURCES = {
     "hgnc_complete_set.txt": "https://storage.googleapis.com/public-download-files/hgnc/tsv/tsv/hgnc_complete_set.txt",
     "NCBI2Reactome_All_Levels.txt": "https://reactome.org/download/current/NCBI2Reactome_All_Levels.txt",
     "ReactomePathways.txt": "https://reactome.org/download/current/ReactomePathways.txt",
+    "ReactomePathwaysRelation.txt": "https://reactome.org/download/current/ReactomePathwaysRelation.txt",
     "gene_specific_summary.txt": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/gene_specific_summary.txt",
 }
 

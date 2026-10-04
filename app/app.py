@@ -7,10 +7,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pandas as pd
 import streamlit as st
-from streamlit_agraph import Config, Edge, Node, agraph
 
 from src.webapp.data import COLOURS, NEIGHBOUR_MIN, Graph
 from src.webapp.explain import next_steps
+from src.webapp.network import build_html
 
 st.set_page_config(page_title="Rare Disease Atlas", page_icon="🧬", layout="wide")
 
@@ -93,6 +93,8 @@ if q:
 
 f = G.facts(disease)
 st.subheader(f"{G.label(disease)}  ·  {disease}")
+if G.comparison_note(disease):
+    st.caption(G.comparison_note(disease))
 
 tab_over, tab_like, tab_exist, tab_next, tab_10x, tab_about = st.tabs(
     ["Overview", "Who is like us", "What exists", "What to do next", "10× idea", "About the evidence"])
@@ -118,10 +120,18 @@ with tab_over:
 # ------------------------------------------------------------------ who is like us
 with tab_like:
     nb = G.neighbours_of(disease)
+    html, drawn = build_html(G, disease)
+    st.markdown("#### Network: how this disease connects to its closest relatives")
+    st.iframe(html, height=780)
+    st.caption(f"Drawn: {drawn['curated']} curated, {drawn['text_mined']} text-mined, {drawn['inferred']} inferred edges. "
+               "Generic Reactome pathways (Metabolism, Disease, Immune System, ...) are left out.")
+    st.markdown("#### Ranked list")
     st.markdown("Ranked by similarity of symptoms (weighted towards rare, informative ones) and shared biology.")
     for r in nb.itertuples():
         weak = r.score < NEIGHBOUR_MIN
         st.markdown(f"### {r.rank}. {r.neighbour}" + ("  (weak match)" if weak else ""))
+        if G.comparison_note(r.neighbour_id):
+            st.caption(G.comparison_note(r.neighbour_id))
         st.progress(min(float(r.score), 1.0), text=f"similarity {r.score:.2f} "
                     f"(symptoms {r.phenotype_score:.2f}, pathways {r.pathway_score:.2f})")
         paths = json.loads(r.shared_pathways)
@@ -147,26 +157,6 @@ with tab_like:
             if only_nb:
                 st.markdown(f"- Listed for {r.neighbour} but not here: " + ", ".join(p["name"] for p in only_nb))
             evidence([i for p in only_here + only_nb for i in p["edge_ids"][:1]] + json.loads(r.gene_edge_ids), "difference: evidence")
-    # graph view: disease in the centre, neighbours, genes
-    st.markdown("#### Graph view")
-    nodes, edges_, seen = [Node(id=disease, label=G.label(disease), size=28, color="#2ca02c")], [], {disease}
-    for r in nb.head(4).itertuples():
-        nodes.append(Node(id=r.neighbour_id, label=r.neighbour, size=20, color="#bbbbbb")); seen.add(r.neighbour_id)
-        edges_.append(Edge(source=disease, target=r.neighbour_id, label=f"{r.score:.2f}", color=COLOURS["inferred"], dashes=True))
-        for g in json.loads(r.neighbour_genes):
-            if g not in seen:
-                nodes.append(Node(id=g, label=g, size=12, color="#d9e6f2")); seen.add(g)
-            edges_.append(Edge(source=r.neighbour_id, target=g, color=COLOURS["curated"]))
-        for p in json.loads(r.shared_pathways)[:1]:
-            if p["id"] not in seen:
-                nodes.append(Node(id=p["id"], label=p["name"][:30], size=12, shape="box", color="#f4e3c1")); seen.add(p["id"])
-            edges_ += [Edge(source=disease, target=p["id"], color=COLOURS["curated"]),
-                       Edge(source=r.neighbour_id, target=p["id"], color=COLOURS["curated"])]
-    for g in f["genes"]:
-        nodes.append(Node(id=g, label=g, size=14, color="#d9e6f2")) if g not in seen else None
-        seen.add(g); edges_.append(Edge(source=disease, target=g, color=COLOURS["curated"]))
-    agraph(nodes=nodes, edges=edges_, config=Config(width=900, height=420, directed=False, physics=True))
-    st.caption("Blue lines: curated database links. Grey dashed: our inferred similarity. Click a disease above for the evidence.")
 
 # ------------------------------------------------------------------ what exists
 with tab_exist:

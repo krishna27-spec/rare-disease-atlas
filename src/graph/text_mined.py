@@ -4,7 +4,7 @@ Run:  uv run python -m src.graph.text_mined
 Reads  data/cache/edges_text_mined.jsonl (from src.extract), data/cache/abstracts.jsonl, data/graph/*.parquet
 Writes data/graph/{nodes,edges}.parquet  (replaces the previous text_mined edges and Paper nodes only)
 
-A fact becomes an edge only if every name resolves to a stable ID already in the graph:
+A fact becomes an edge only if every name resolves to a stable ID already in the graph AND the quote itself names it:
   disease   -> MONDO via src.etl.terms, and it must be one of the paper's own diseases
   gene      -> HGNC symbol (the symbol or its full name)
   phenotype -> HP term (name or HPO synonym)
@@ -71,6 +71,12 @@ def main() -> None:
         obj = genes.get(key) if f["predicate"] == "gene_associated_with_disease" else phenos.get(key)
         if obj is None:
             stats["dropped: unresolved (name not in graph)"] += 1
+            continue
+        # the quote must itself name the object (or a known alias), else the quote does not support this edge
+        names = [k for k, v in (genes if f["predicate"] == "gene_associated_with_disease" else phenos).items() if v == obj]
+        q = normalise(f["evidence_text"])
+        if not (key in q or any(re.search(rf"\b{re.escape(n)}\b", q) for n in names)):
+            stats["dropped: quote does not name the gene/symptom"] += 1
             continue
         pmid = f["pmid"]
         new_edges.append(make_edge(

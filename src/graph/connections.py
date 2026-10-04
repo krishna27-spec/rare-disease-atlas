@@ -13,6 +13,7 @@ import obonet
 import pandas as pd
 
 from src.etl.download import RAW
+from src.graph.reactome import generic_pathways
 from src.graph.schema import GRAPH_DIR
 from src.graph.similarity import information_content, most_specific
 
@@ -96,6 +97,7 @@ def neighbours(nodes, edges, pairs, dname, diseases) -> pd.DataFrame:
     genes = {d: set(gene_e[gene_e.object == d].subject) for d in diseases}
     path_e = edges[edges.predicate == "participates_in_pathway"]
     pname = nodes.set_index("node_id")["name"]
+    generic = generic_pathways()
     sim = edges[edges.predicate == "similar_to"].set_index(["subject", "object"])["edge_id"]
 
     def pheno_ids(d, term):  # direct edges of d whose term is `term` or one of its children
@@ -115,8 +117,8 @@ def neighbours(nodes, edges, pairs, dname, diseases) -> pd.DataFrame:
         mine = pairs[(pairs.disease_a == d) | (pairs.disease_b == d)].sort_values("combined", ascending=False)
         for rank, r in enumerate(mine.head(TOP_NEIGHBOURS).itertuples(), 1):
             o = r.disease_b if r.disease_a == d else r.disease_a
-            paths_d = {p for g in genes[d] for p in path_e[path_e.subject == g].object}
-            paths_o = {p for g in genes[o] for p in path_e[path_e.subject == g].object}
+            paths_d = {p for g in genes[d] for p in path_e[path_e.subject == g].object} - generic
+            paths_o = {p for g in genes[o] for p in path_e[path_e.subject == g].object} - generic
             shared_p = sorted(paths_d & paths_o, key=lambda p: pname.get(p, ""))
             shared_ph = [{"id": t, "name": hp.nodes[t]["name"], "ic": round(ic[t], 2),
                           "edge_ids": pheno_ids(d, t) + pheno_ids(o, t)}

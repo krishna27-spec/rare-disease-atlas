@@ -15,6 +15,7 @@ import obonet
 import pandas as pd
 
 from src.etl.download import RAW
+from src.graph.reactome import generic_pathways
 from src.graph.schema import EDGE_SCHEMA, GRAPH_DIR, make_edge, write_table
 
 W_PHENOTYPE, W_PATHWAY = 0.6, 0.4   # combined = 0.6 * phenotype + 0.4 * pathway
@@ -69,7 +70,8 @@ def main() -> None:
     genes = {d: set(edges[(edges.object == d) & (edges.predicate == "gene_associated_with_disease")]["subject"])
              for d in diseases}
     gene_paths = edges[edges.predicate == "participates_in_pathway"].groupby("subject")["object"].apply(set)
-    paths = {d: set().union(*[gene_paths.get(g, set()) for g in genes[d]]) for d in diseases}
+    generic = generic_pathways()   # root-level pathways ('Metabolism', 'Disease', ...) fit every disease: skip them
+    paths = {d: set().union(*[gene_paths.get(g, set()) for g in genes[d]]) - generic for d in diseases}
     ic_w = information_content(paths)
 
     # --- scores for every pair

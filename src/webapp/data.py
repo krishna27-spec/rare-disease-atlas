@@ -108,6 +108,16 @@ class Graph:
     def edge(self, eid: str) -> dict | None:
         return self.edge_by_id.loc[eid].to_dict() if eid in self.edge_by_id.index else None
 
+    def comparison_note(self, d: str) -> str:
+        """Plain-language reason a 'Contrast' disease is in the Atlas, built from graph data (no extra claims)."""
+        if d not in self.diseases.index or self.diseases.loc[d, "group"] != "Contrast":
+            return ""
+        sanf = self.nodes[(self.nodes.node_type == "Disease") & (self.nodes.group == "Sanfilippo")].node_id
+        rows = self.neighbours[(self.neighbours.disease_id == d) & self.neighbours.neighbour_id.isin(sanf)]
+        n = int(rows.n_shared_pathways.max()) if len(rows) else 0
+        return (f"Included as a comparison disease: it shares up to {n} specific Reactome pathways with the "
+                "Sanfilippo (MPS III) diseases, so it shows what is similar and what differs.")
+
     def label(self, nid: str) -> str:
         return self.name.get(nid, nid)
 
