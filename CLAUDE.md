@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # CLAUDE.md: Rare Disease Atlas (Hack-Nation hackathon, Oct 3–4 2026)
 
 You are helping a beginner build a hackathon project in about 14 working hours. The user is new to biology and to this stack. **Explain what you're doing in plain language, work in small steps, and run things to prove they work before moving on.** Prefer boring, simple code over clever code.
@@ -120,3 +124,26 @@ app/app.py
 ## When unsure
 
 Ask the user one short question, with a recommended default, and carry on with the default if they don't answer. Keep a running `NOTES.md` of decisions and anything that failed, so a new session can pick up where this one stopped.
+
+## Current state and commands (as built; milestones 1–5 in progress)
+
+Run everything from the repo root with `uv run`. There is no test suite or linter configured yet; verify by running a script and printing its summary.
+
+```
+uv run python -m src.hello_llm          # M1: LLM smoke test (reads .env)
+uv run python -m src.etl.download       # downloads data/raw/* once (skips existing files)
+uv run python -m src.etl.biology        # M3: writes data/graph/{nodes,edges}.parquet
+uv run python -m src.graph.similarity   # M4: similarity_pairs.csv, clusters.csv, similar_to edges
+uv run python -m src.etl.research       # M5: trials, grants, PubMed -> graph + data/cache/abstracts.jsonl
+```
+
+Order matters: `biology` creates the parquet files; later layers read them. `src/graph/build.py` (the planned one-command rebuild) does not exist yet.
+
+### Architecture notes that span files
+
+- `src/graph/schema.py` is the single gate for graph writes. Always build edges with `make_edge()` (it asserts source, date, confidence, evidence type, `method` for inferred, `evidence_text` for text_mined). Edge IDs are a hash of subject|predicate|object|source|source_record, so re-runs are stable.
+- Layers are idempotent: `merge_layer(nodes, edges, node_types, predicates)` drops that layer's old node types and predicates, then adds the new rows. A new layer must declare which node types and predicates it owns, or re-runs will duplicate or clobber other layers. `biology.py` rewrites the whole graph (via `write_table`) and so must run first.
+- `src/etl/terms.py` maps free text to our diseases (`match_diseases`, `search_phrases`) using MONDO names and synonyms. It returns `specific` vs `broad` (family) matches, and `research.py` gives broad matches lower confidence.
+- `src/etl/research.py` caches each API response through `cached(source, key, fetch)` under `data/cache/`. Use it for any new API call so re-runs don't re-download.
+- Known data quirk: MONDO files CLN10 (CTSD) under CLN1, so `biology.py` excludes that subtree via `EXCLUDE_SUBTREES`. Genes found only through a parent disease get `INDIRECT_CONFIDENCE`.
+- Git: `.claude/skills` and `.agents/skills` are marimo skill files installed by the setup; `setup-steps.md` is the user's setup guide (molab for the GPU run, laptop for everything else).

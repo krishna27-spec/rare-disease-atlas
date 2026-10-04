@@ -34,6 +34,7 @@ NODE_SCHEMA = pa.schema([
     ("hgnc_id", pa.string()),            # genes only
     ("entrez_id", pa.string()),          # genes only
     ("clinvar_pathogenic_alleles", pa.int64()),  # genes only (variant counts, not variants)
+    ("attrs", pa.string()),              # JSON text with extra facts (trial status, grant amount, ...)
 ])
 
 
@@ -65,3 +66,16 @@ def write_table(rows: list[dict], schema: pa.Schema, name: str) -> pd.DataFrame:
     pq.write_table(pa.Table.from_pandas(df, schema=schema, preserve_index=False),
                    GRAPH_DIR / f"{name}.parquet")
     return df
+
+
+def merge_layer(nodes: list[dict], edges: list[dict], node_types: set[str], predicates: set[str]) -> None:
+    """Replace one layer inside the saved graph: drop the old nodes/edges of this layer, add the new.
+
+    Lets a milestone be re-run without duplicating its rows or touching other layers."""
+    import pyarrow.parquet as pq
+    old_nodes = pq.read_table(GRAPH_DIR / "nodes.parquet").to_pylist()
+    old_edges = pq.read_table(GRAPH_DIR / "edges.parquet").to_pylist()
+    keep_nodes = [n for n in old_nodes if n["node_type"] not in node_types]
+    keep_edges = [e for e in old_edges if e["predicate"] not in predicates]
+    write_table(keep_nodes + nodes, NODE_SCHEMA, "nodes")
+    write_table(keep_edges + edges, EDGE_SCHEMA, "edges")
